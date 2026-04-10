@@ -1,0 +1,15 @@
+{
+    "patient_info": {
+        "age": 45,
+        "gender": "Male",
+        "history": "Smoker, occasional alcohol"
+    },
+    "symptoms": [
+        "severe headache",
+        "dizziness",
+        "high blood pressure"
+    ],
+    "current_medications": [
+        "Ibuprofen"
+    ]
+}
