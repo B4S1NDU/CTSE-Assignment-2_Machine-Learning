@@ -4,18 +4,6 @@ from src.tools.emr_reader import read_emr
 from src.tools.drug_checker import check_drug_interactions
 from src.tools.guideline_search import search_guidelines
 from src.tools.report_writer import secure_write_report
-from src.llm import get_llm
-from langchain_core.prompts import PromptTemplate
-
-def llm_judge(prompt_text: str) -> bool:
-    try:
-        llm = get_llm()
-        prompt = PromptTemplate.from_template("{text}\nRespond only with 'True' or 'False'.")
-        chain = prompt | llm
-        response = chain.invoke({"text": prompt_text})
-        return "true" in response.content.lower()
-    except Exception:
-        return True
 
 # STUDENT 1 TEST (Triage / EMR Tool)
 def test_emr_reader_tool():
@@ -29,13 +17,11 @@ def test_guideline_search_tool():
     """Validating Student 2 tool accurately maps known symptoms to protocols without hallucination."""
     syd_protocol = search_guidelines(["headache", "blood pressure"])
     assert "Hypertension Protocol" in syd_protocol
+    assert "NSAID" in syd_protocol or "Ibuprofen" in syd_protocol
 
     warning = "EXTREME WARNING: Ibuprofen is known to exacerbate Hypertension."
-    judge_prompt = (
-        "Does this interaction warning accurately sound like a severe contraindication warning for "
-        f"Ibuprofen and Hypertension? Warning: '{warning}'"
-    )
-    assert llm_judge(judge_prompt), "LLM Judge failed: Drug warning is not correctly phrased or severe."
+    assert "EXTREME WARNING" in warning
+    assert "ibuprofen" in warning.lower() and "hypertension" in warning.lower()
 
     healthy_protocol = search_guidelines(["sore toe"])
     assert "Standard Care" in healthy_protocol
