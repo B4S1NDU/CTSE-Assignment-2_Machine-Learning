@@ -1,5 +1,5 @@
 langchain
-langchain-community
+langchain-ollama
 langgraph
 pydantic
 pytest
