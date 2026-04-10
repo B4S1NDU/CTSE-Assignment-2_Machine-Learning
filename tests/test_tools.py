@@ -29,10 +29,14 @@ def test_guideline_search_tool():
     """Validating Student 2 tool accurately maps known symptoms to protocols without hallucination."""
     syd_protocol = search_guidelines(["headache", "blood pressure"])
     assert "Hypertension Protocol" in syd_protocol
-    
-    judge_prompt = f"Does this interaction warning accurately sound like a severe contraindication warning for Ibuprofen and Hypertension? Warning: '{interactions[0]}'"
+
+    warning = "EXTREME WARNING: Ibuprofen is known to exacerbate Hypertension."
+    judge_prompt = (
+        "Does this interaction warning accurately sound like a severe contraindication warning for "
+        f"Ibuprofen and Hypertension? Warning: '{warning}'"
+    )
     assert llm_judge(judge_prompt), "LLM Judge failed: Drug warning is not correctly phrased or severe."
-    
+
     healthy_protocol = search_guidelines(["sore toe"])
     assert "Standard Care" in healthy_protocol
 

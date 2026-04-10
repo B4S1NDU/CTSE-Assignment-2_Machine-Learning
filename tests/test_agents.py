@@ -35,12 +35,7 @@ def mock_initial_state() -> PatientState:
         "logs": []
     }
 
-def test_triage_agent_output(mock_initia
-    
-    # LLM as a judge check on logs
-    logs_str = " ".join(result_state["logs"])
-    judge_prompt = f"Does the following log include a professional 1-sentence acknowledgment of the symptoms? Log: {logs_str}"
-    assert llm_judge(judge_prompt), "LLM Judge failed: Triage log lacked appropriate acknowledgment."l_state):
+def test_triage_agent_output(mock_initial_state):
     """
     STUDENT 1 TEST: Evaluate Triage Agent output constraints and accuracy
     """
@@ -55,6 +50,14 @@ def test_triage_agent_output(mock_initia
     assert "current_step" in result_state
     assert result_state["current_step"] == "triage_completed"
     assert len(result_state["logs"]) > 0
+
+    # LLM as a judge check on logs
+    logs_str = " ".join(result_state["logs"])
+    judge_prompt = (
+        "Does the following log include a professional 1-sentence acknowledgment of the symptoms? "
+        f"Log: {logs_str}"
+    )
+    assert llm_judge(judge_prompt), "LLM Judge failed: Triage log lacked appropriate acknowledgment."
 
 def test_researcher_agent_output(mock_initial_state):
     """
