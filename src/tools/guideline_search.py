@@ -1,5 +1,18 @@
 import os
 from typing import List
+import sqlite3
+
+def init_guideline_db():
+    conn = sqlite3.connect(":memory:")
+    c = conn.cursor()
+    c.execute("CREATE TABLE guidelines (keyword TEXT, protocol TEXT)")
+    c.execute("INSERT INTO guidelines VALUES ('blood pressure', 'Hypertension Protocol: Monitor closely. Avoid NSAIDs (like Ibuprofen) as they can elevate blood pressure.')")
+    c.execute("INSERT INTO guidelines VALUES ('headache', 'Hypertension Protocol: Monitor closely. Avoid NSAIDs (like Ibuprofen) as they can elevate blood pressure.')")
+    c.execute("INSERT INTO guidelines VALUES ('dizziness', 'Dizziness Protocol: Check for dehydration or hypertensive crisis.')")
+    conn.commit()
+    return conn
+
+_guideline_db_conn = init_guideline_db()
 
 def search_guidelines(symptoms: List[str]) -> str:
     """
@@ -21,11 +34,17 @@ def search_guidelines(symptoms: List[str]) -> str:
     symptoms_str = " ".join(str(s).lower() for s in symptoms)
     
     try:
-        # Mock offline directory search logic
-        if "blood pressure" in symptoms_str or "headache" in symptoms_str:
-            return "Hypertension Protocol: Monitor closely. Avoid NSAIDs (like Ibuprofen) as they can elevate blood pressure."
-        elif "dizziness" in symptoms_str:
-            return "Dizziness Protocol: Check for dehydration or hypertensive crisis."
+        c = _guideline_db_conn.cursor()
+        protocols = set()
+        for symptom in symptoms:
+            symptom_str = str(symptom).lower()
+            c.execute("SELECT protocol FROM guidelines WHERE keyword = ? OR ? LIKE '%' || keyword || '%'", (symptom_str, symptom_str))
+            rows = c.fetchall()
+            for row in rows:
+                protocols.add(row[0])
+                
+        if protocols:
+            return " ".join(protocols)
             
         return "Standard Care Protocol: Proceed with normal observations."
     except Exception as e:

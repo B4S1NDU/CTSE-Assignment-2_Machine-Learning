@@ -32,9 +32,11 @@ def triage_node(state: PatientState):
     
     try:
         chain = prompt | llm
-        chain.invoke({"text": json.dumps(emr_data)})
+        response = chain.invoke({"text": json.dumps(emr_data)})
+        acknowledgement = response.content
     except Exception as e:
-        print(f"Skipping local LLM execution due to connection: {e}")
+        print(f"LLM execution failed: {e}")
+        acknowledgement = "Error: LLM failed to process EMR data."
         
     patient_info = emr_data.get("patient_info", {})
     symptoms = emr_data.get("symptoms", [])
@@ -43,5 +45,5 @@ def triage_node(state: PatientState):
         "patient_info": patient_info,
         "symptoms": symptoms,
         "current_step": "triage_completed",
-        "logs": ["Triage Agent extracted patient info and symptoms using EMR Tool and LLM prompt."]
+        "logs": [f"Triage Agent extracted patient info and symptoms using EMR Tool.", f"LLM Acknowledgment: {acknowledgement}"]
     }

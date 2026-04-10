@@ -1,5 +1,16 @@
 from typing import List
-import json
+import sqlite3
+
+def init_drug_db():
+    conn = sqlite3.connect(":memory:")
+    c = conn.cursor()
+    c.execute("CREATE TABLE interactions (medication TEXT, condition TEXT, warning TEXT)")
+    c.execute("INSERT INTO interactions VALUES ('ibuprofen', 'hypertension', 'EXTREME WARNING: Ibuprofen is known to exacerbate Hypertension.')")
+    c.execute("INSERT INTO interactions VALUES ('aspirin', 'peptic ulcer', 'WARNING: Aspirin increases risk of gastrointestinal bleeding.')")
+    conn.commit()
+    return conn
+
+_drug_db_conn = init_drug_db()
 
 def check_drug_interactions(diagnoses: List[str], current_medications: List[str]) -> List[str]:
     """
@@ -24,11 +35,16 @@ def check_drug_interactions(diagnoses: List[str], current_medications: List[str]
     
     try:
         meds_lower = [str(m).lower() for m in current_medications if m]
-        diags_lower = [str(d).lower() for d in diagnoses if d]
+        diags_lower = [str(d).lower for d in diagnoses if d]
         
-        # Mock offline database check resolving severe side effects
-        if "ibuprofen" in meds_lower and any("hypertension" in d for d in diags_lower):
-            interactions.append("EXTREME WARNING: Ibuprofen is known to exacerbate Hypertension.")
+        c = _drug_db_conn.cursor()
+        for med in meds_lower:
+            for diag in diagnoses:
+                diag_lower = str(diag).lower()
+                c.execute("SELECT warning FROM interactions WHERE medication = ? AND condition = ?", (med, diag_lower))
+                rows = c.fetchall()
+                for row in rows:
+                    interactions.append(row[0])
             
         if not interactions:
             interactions.append("No known severe interactions found in local database.")

@@ -30,8 +30,8 @@ def researcher_node(state: PatientState):
         response = chain.invoke({"symptoms": ', '.join(symptoms), "guidelines": guideline_text})
         potential_diagnoses = [d.strip() for d in response.content.split(",") if d.strip()]
     except Exception as e:
-        # Fallback if unconfigured local LLM
-        potential_diagnoses = ["Hypertension", "Type 2 Diabetes"] if "headache" in symptoms else ["Healthy"]
+        print(f"LLM execution failed: {e}")
+        potential_diagnoses = ["Error: Could not determine diagnoses"]
         
     return {
         "potential_diagnoses": potential_diagnoses,
