@@ -59,6 +59,7 @@ END
 CTSE Assessment 02/
 ├── src/
 │   ├── main.py                    # Entry point - runs the MAS
+│   ├── generate_evidence.py       # Saves clean grading evidence artifacts
 │   ├── state.py                   # State schema (TypedDict)
 │   ├── graph.py                   # LangGraph orchestrator
 │   ├── llm.py                     # Ollama connection
@@ -76,7 +77,9 @@ CTSE Assessment 02/
 │   └── mock_patient.json          # Sample patient intake
 ├── reports/                       # Auto-generated outputs
 ├── tests/
-│   └── test_tools.py              # Unified test harness
+│   ├── test_tools.py              # Tool-level tests
+│   ├── test_agents.py             # Agent-level tests
+│   └── test_integration_e2e.py    # End-to-end clean-run assertions
 ├── ARCHITECTURE_DIAGRAM.md        # Visual system design
 ├── CONTRIBUTIONS.md               # Individual student work
 ├── requirements.txt               # Python dependencies
@@ -129,6 +132,54 @@ Open the file created in the `reports/` folder to see the clinical summary.
 ```bash
 pytest tests/
 ```
+
+### Step 6: Generate Grading Evidence (Clean Run)
+```bash
+python -m src.generate_evidence
+```
+
+This creates timestamped artifacts:
+- `reports/evidence_report_YYYYMMDD_HHMMSS.md`
+- `logs/evidence_log_YYYYMMDD_HHMMSS.log`
+
+---
+
+## ✅ Verification
+
+Use this checklist to prove a production-ready local run:
+
+1. Start Ollama:
+```bash
+ollama run llama3
+```
+
+2. Run all tests:
+```bash
+python -m pytest tests -v
+```
+Expected:
+- Unit and agent tests pass.
+- End-to-end test (`test_integration_e2e.py`) asserts:
+  - no `"Error:"` in diagnoses,
+  - no `"Approved offline. Error"` in report,
+  - report path exists and contains clinical sections.
+
+3. Run pipeline:
+```bash
+python -m src.main
+```
+Expected:
+- All 4 agents execute in order.
+- Final report path is generated under `reports/`.
+- No connection-refused messages when Ollama is running.
+
+4. Save objective grading artifacts:
+```bash
+python -m src.generate_evidence
+```
+Expected:
+- New timestamped `reports/evidence_report_*` file.
+- New timestamped `logs/evidence_log_*` file.
 
 ---
 
@@ -219,7 +270,7 @@ A 4-8 page report addressing:
 **Q: "HTTPConnectionPool(host='localhost', port=11434): Connection refused"**
 - A: Start Ollama in a separate terminal: `ollama run llama3`
 
-**Q: "ModuleNotFoundError: No module named 'langchain_community'"**
+**Q: "ModuleNotFoundError: No module named 'langchain_ollama'"**
 - A: Ensure you activated the venv and ran: `pip install -r requirements.txt`
 
 **Q: Tests fail with "FileNotFoundError"**
