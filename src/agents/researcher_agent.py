@@ -3,6 +3,8 @@ from src.tools.guideline_search import search_guidelines
 from langchain_core.prompts import PromptTemplate
 from src.llm import get_llm
 
+from src.logger import log_agent_execution
+
 def researcher_node(state: PatientState):
     """
     STUDENT 2 AGENT: Medical Researcher
@@ -30,11 +32,13 @@ def researcher_node(state: PatientState):
         response = chain.invoke({"symptoms": ', '.join(symptoms), "guidelines": guideline_text})
         potential_diagnoses = [d.strip() for d in response.content.split(",") if d.strip()]
     except Exception as e:
-        print(f"LLM execution failed: {e}")
-        potential_diagnoses = ["Error: Could not determine diagnoses"]
+        log_agent_execution("ResearcherAgent", state, error=e)
+        potential_diagnoses = [f"Error: Could not determine diagnoses. {str(e)}"]
         
-    return {
+    result = {
         "potential_diagnoses": potential_diagnoses,
         "current_step": "research_completed",
         "logs": [f"Researcher Agent evaluated guidelines and proposed diagnoses: {potential_diagnoses}"]
     }
+    log_agent_execution("ResearcherAgent", state, result=result)
+    return result

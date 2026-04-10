@@ -3,18 +3,24 @@ from src.tools.emr_reader import read_emr
 from langchain_core.prompts import PromptTemplate
 from src.llm import get_llm
 import json
-import logging
+
+from src.logger import log_agent_execution
 
 def triage_node(state: PatientState):
     """
     STUDENT 1 AGENT: Triage Specialist
     """
-    logger = logging.getLogger("TriageAgent")
     print("--- [Agent 1] TRIAGE SPECIALIST ---")
-    logger.info(f"Triage Node Triggered. Input state tracking: {state.get('raw_emr_path', 'Unknown')}")
     
     # Use Tool
-    emr_data = read_emr(state["raw_emr_path"])
+    try:
+        emr_data = read_emr(state.get("raw_emr_path", "data/mock_patient.json"))
+    except Exception as e:
+        log_agent_execution("TriageAgent", state, error=e)
+        return {
+            "current_step": "triage_failed",
+            "logs": [f"Triage Agent failed to read EMR: {str(e)}"]
+        }
     
     # Provide safe fallback data directly from tool, but also invoke LLM for assignment criteria
     llm = get_llm()
@@ -35,15 +41,17 @@ def triage_node(state: PatientState):
         response = chain.invoke({"text": json.dumps(emr_data)})
         acknowledgement = response.content
     except Exception as e:
-        print(f"LLM execution failed: {e}")
-        acknowledgement = "Error: LLM failed to process EMR data."
+        log_agent_execution("TriageAgent", state, error=e)
+        acknowledgement = f"Error: LLM failed to process EMR data. {str(e)}"
         
     patient_info = emr_data.get("patient_info", {})
     symptoms = emr_data.get("symptoms", [])
     
-    return {
+    result = {
         "patient_info": patient_info,
         "symptoms": symptoms,
         "current_step": "triage_completed",
         "logs": [f"Triage Agent extracted patient info and symptoms using EMR Tool.", f"LLM Acknowledgment: {acknowledgement}"]
     }
+    log_agent_execution("TriageAgent", state, result=result)
+    return result

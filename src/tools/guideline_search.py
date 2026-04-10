@@ -1,6 +1,8 @@
 import os
-from typing import List
+from typing import List, Set
 import sqlite3
+
+from src.logger import log_tool_call
 
 def init_guideline_db():
     conn = sqlite3.connect(":memory:")
@@ -16,26 +18,23 @@ _guideline_db_conn = init_guideline_db()
 
 def search_guidelines(symptoms: List[str]) -> str:
     """
-    STUDENT 2 TOOL: Scans local medical guidelines based on a list of patient symptoms.
+    Scans local medical guidelines based on a list of patient symptoms.
     
     Args:
-        symptoms (List[str]): Extracted patient symptoms from the triage stage.
+        symptoms: A list of extracted patient symptoms.
         
     Returns:
-        str: The raw text of the recommended medical protocol.
+        str: The raw text of the recommended medical protocol(s).
         
     Raises:
         TypeError: If symptoms provided are not in list format.
     """
-    if not isinstance(symptoms, list):
-        raise TypeError(f"Expected a list of symptoms, got {type(symptoms).__name__}")
-        
-    print(f"[*] Tool: Searching guidelines for symptoms: {symptoms}")
-    symptoms_str = " ".join(str(s).lower() for s in symptoms)
-    
     try:
+        if not isinstance(symptoms, list):
+            raise TypeError(f"Expected a list of symptoms, got {type(symptoms).__name__}")
+            
         c = _guideline_db_conn.cursor()
-        protocols = set()
+        protocols: Set[str] = set()
         for symptom in symptoms:
             symptom_str = str(symptom).lower()
             c.execute("SELECT protocol FROM guidelines WHERE keyword = ? OR ? LIKE '%' || keyword || '%'", (symptom_str, symptom_str))
@@ -44,9 +43,13 @@ def search_guidelines(symptoms: List[str]) -> str:
                 protocols.add(row[0])
                 
         if protocols:
-            return " ".join(protocols)
+            result = " ".join(protocols)
+            log_tool_call("search_guidelines", (symptoms,), {}, result=result)
+            return result
             
-        return "Standard Care Protocol: Proceed with normal observations."
+        result = "Standard Care Protocol: Proceed with normal observations."
+        log_tool_call("search_guidelines", (symptoms,), {}, result=result)
+        return result
     except Exception as e:
-        print(f"[!] Error during guideline search: {str(e)}")
+        log_tool_call("search_guidelines", (symptoms,), {}, error=e)
         return "Standard Care Protocol: Proceed with caution due to system degradation."

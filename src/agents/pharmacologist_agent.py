@@ -3,6 +3,8 @@ from src.tools.drug_checker import check_drug_interactions
 from langchain_core.prompts import PromptTemplate
 from src.llm import get_llm
 
+from src.logger import log_agent_execution
+
 def pharmacologist_node(state: PatientState):
     """
     STUDENT 3 AGENT: Pharmacologist
@@ -31,10 +33,13 @@ def pharmacologist_node(state: PatientState):
         assessment = chain.invoke({"warnings": interactions})
         final_interactions = interactions + [f"Pharmacologist Assessment: {assessment.content}"]
     except Exception as e:
-        final_interactions = interactions + ["Pharmacologist Assessment: Review tool output carefully."]
+        log_agent_execution("PharmacologistAgent", state, error=e)
+        final_interactions = interactions + [f"Pharmacologist Assessment: Review tool output carefully. Error: {str(e)}"]
         
-    return {
+    result = {
         "drug_interactions": final_interactions,
         "current_step": "pharmacology_completed",
         "logs": ["Pharmacologist Agent queried Database and rendered safety assessment."]
     }
+    log_agent_execution("PharmacologistAgent", state, result=result)
+    return result

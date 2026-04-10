@@ -4,6 +4,8 @@ from langchain_core.prompts import PromptTemplate
 from src.llm import get_llm
 import os
 
+from src.logger import log_agent_execution
+
 def cmo_node(state: PatientState):
     """
     STUDENT 4 AGENT: Chief Medical Officer (CMO)
@@ -48,13 +50,20 @@ def cmo_node(state: PatientState):
         blessing = chain.invoke({"report": report_content})
         report_content += f"\n\n## CMO Sign-Off\n{blessing.content}"
     except Exception as e:
-        report_content += f"\n\n## CMO Sign-Off\nApproved offline."
+        log_agent_execution("CMOAgent", state, error=e)
+        report_content += f"\n\n## CMO Sign-Off\nApproved offline. Error: {str(e)}"
     
     # STUDENT 4 TOOL
-    report_path = secure_write_report(report_content)
+    try:
+        report_path = secure_write_report(report_content)
+    except Exception as e:
+        log_agent_execution("CMOAgent", state, error=e)
+        report_path = "Error: Report generation failed."
         
-    return {
+    result = {
         "final_report_path": report_path,
         "current_step": "cmo_completed",
         "logs": [f"CMO generated final clinical summary report via LLM and Toolkit at {report_path}."]
     }
+    log_agent_execution("CMOAgent", state, result=result)
+    return result

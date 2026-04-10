@@ -2,17 +2,11 @@ from src.graph import build_graph
 import pprint
 import logging
 
-# Central observability via logging configuration
-logging.basicConfig(
-    filename='execution.log',
-    filemode='w',
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
+from src.logger import logger
 
 def main():
     print("Initializing Healthcare MAS...")
-    logging.info("System Initialized.")
+    logger.info("System Initialized.")
     
     # Compile the LangGraph
     app = build_graph()
@@ -31,14 +25,18 @@ def main():
     
     # Execute the graph locally
     print("\nStarting execution trace:\n")
-    logging.info(f"Starting pipeline execution with state: {initial_state}")
+    logger.info(f"Starting pipeline execution with state: {initial_state}")
     
-    final_state = app.invoke(initial_state)
-    
-    print("\n--- Final State Output ---")
-    pprint.pprint(final_state)
-    logging.info(f"Pipeline finished. Final State: {final_state}")
-    print(f"\nReport generated at: {final_state.get('final_report_path')}")
+    try:
+        final_state = app.invoke(initial_state)
+        
+        print("\n--- Final State Output ---")
+        pprint.pprint(final_state)
+        logger.info(f"Pipeline finished. Final State: {final_state}")
+        print(f"\nReport generated at: {final_state.get('final_report_path')}")
+    except Exception as e:
+        logger.error(f"Pipeline execution failed: {e}", exc_info=True)
+        print(f"Error during execution: {e}")
 
 if __name__ == "__main__":
     main()
