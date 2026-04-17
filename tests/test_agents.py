@@ -15,9 +15,9 @@ def llm_judge(prompt_text: str) -> bool:
         chain = prompt | llm
         response = chain.invoke({"text": prompt_text})
         return "true" in response.content.lower()
-    except Exception:
-        # Fallback to true if LLM is unavailable in test environment
-        return True
+    except Exception as e:
+        # Strict evaluation behavior: skip judge-dependent assertions if LLM is unavailable.
+        pytest.skip(f"LLM judge unavailable: {e}")
 
 # To evaluate the agents properly, we use simple property-based testing and keyword checks
 # simulating an "LLM-as-a-judge" methodology without relying exclusively on LLM availability.
@@ -74,9 +74,7 @@ def test_researcher_agent_output(mock_initial_state):
     assert llm_judge(judge_prompt), "LLM Judge failed: Diagnoses contain hallucinations or unreasonable suggestions."
     assert isinstance(diagnoses, list), "Diagnoses should be a list"
     assert len(diagnoses) > 0, "Researcher must provide at least one diagnosis"
-    
-    # Constraints check (prevent hallucination of unrelated conditions)
-    # E.g., shouldn't contain "cancer" based on generic symptoms if not in guidelines
+    assert all("cancer" not in d.lower() for d in diagnoses), "Out-of-scope diagnosis detected."
 
 def test_pharmacologist_agent_output(mock_initial_state):
     """

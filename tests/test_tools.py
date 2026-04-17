@@ -34,6 +34,10 @@ def test_drug_checker_tool():
     meds = ["Ibuprofen"]
     interactions = check_drug_interactions(diagnoses, meds)
     assert any("WARNING" in msg for msg in interactions)
+
+    # Synonym/variant check (hypertensive crisis should map to hypertension risk)
+    variant_interactions = check_drug_interactions(["Hypertensive Crisis"], ["Ibuprofen"])
+    assert any("WARNING" in msg for msg in variant_interactions)
     
     # Test safe
     safe_interactions = check_drug_interactions(["Healthy"], ["Vitamin C"])

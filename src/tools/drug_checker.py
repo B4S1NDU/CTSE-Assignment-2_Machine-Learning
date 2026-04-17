@@ -1,6 +1,5 @@
-from typing import List
 import sqlite3
-from typing import List, Optional
+from typing import List
 
 from src.logger import log_tool_call
 
@@ -14,6 +13,15 @@ def init_drug_db():
     return conn
 
 _drug_db_conn = init_drug_db()
+
+def _normalize_condition(condition: str) -> str:
+    """Normalize diagnosis variants to canonical DB conditions."""
+    normalized = condition.strip().lower()
+    condition_aliases = {
+        "high blood pressure": "hypertension",
+        "hypertensive crisis": "hypertension",
+    }
+    return condition_aliases.get(normalized, normalized)
 
 def check_drug_interactions(diagnoses: List[str], current_medications: List[str]) -> List[str]:
     """
@@ -42,7 +50,7 @@ def check_drug_interactions(diagnoses: List[str], current_medications: List[str]
         c = _drug_db_conn.cursor()
         for med in meds_lower:
             for diag in diagnoses:
-                diag_lower = str(diag).lower()
+                diag_lower = _normalize_condition(str(diag))
                 c.execute("SELECT warning FROM interactions WHERE medication = ? AND condition = ?", (med, diag_lower))
                 rows = c.fetchall()
                 for row in rows:
