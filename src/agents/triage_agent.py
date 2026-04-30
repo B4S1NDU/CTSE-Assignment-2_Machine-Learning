@@ -11,6 +11,7 @@ def triage_node(state: PatientState):
     STUDENT 1 AGENT: Triage Specialist
     """
     print("--- [Agent 1] TRIAGE SPECIALIST ---")
+    errors = []
     
     # Use Tool
     try:
@@ -19,7 +20,8 @@ def triage_node(state: PatientState):
         log_agent_execution("TriageAgent", state, error=e)
         return {
             "current_step": "triage_failed",
-            "logs": [f"Triage Agent failed to read EMR: {str(e)}"]
+            "logs": ["Triage Agent failed to read EMR input."],
+            "errors": ["TriageAgent: EMR read failed"]
         }
     
     # Provide safe fallback data directly from tool, but also invoke LLM for assignment criteria
@@ -42,7 +44,8 @@ def triage_node(state: PatientState):
         acknowledgement = response.content
     except Exception as e:
         log_agent_execution("TriageAgent", state, error=e)
-        acknowledgement = f"Error: LLM failed to process EMR data. {str(e)}"
+        acknowledgement = "Acknowledgment unavailable. Proceeding with tool-derived clinical data."
+        errors.append("TriageAgent: LLM acknowledgment failed")
         
     patient_info = emr_data.get("patient_info", {})
     symptoms = emr_data.get("symptoms", [])
@@ -51,7 +54,8 @@ def triage_node(state: PatientState):
         "patient_info": patient_info,
         "symptoms": symptoms,
         "current_step": "triage_completed",
-        "logs": [f"Triage Agent extracted patient info and symptoms using EMR Tool.", f"LLM Acknowledgment: {acknowledgement}"]
+        "logs": [f"Triage Agent extracted patient info and symptoms using EMR Tool.", f"LLM Acknowledgment: {acknowledgement}"],
+        "errors": errors,
     }
     log_agent_execution("TriageAgent", state, result=result)
     return result

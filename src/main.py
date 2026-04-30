@@ -20,7 +20,8 @@ def main():
         "drug_interactions": [],
         "final_report_path": "",
         "current_step": "start",
-        "logs": ["System initialized"]
+        "logs": ["System initialized"],
+        "errors": [],
     }
     
     # Execute the graph locally
