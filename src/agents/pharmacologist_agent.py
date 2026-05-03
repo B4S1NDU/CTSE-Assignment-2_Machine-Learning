@@ -10,6 +10,7 @@ def pharmacologist_node(state: PatientState):
     STUDENT 3 AGENT: Pharmacologist
     """
     print("--- [Agent 3] PHARMACOLOGIST ---")
+    errors = []
     
     diagnoses = state.get("potential_diagnoses", [])
     meds = state.get("patient_info", {}).get("current_medications", ["Ibuprofen"])
@@ -34,12 +35,14 @@ def pharmacologist_node(state: PatientState):
         final_interactions = interactions + [f"Pharmacologist Assessment: {assessment.content}"]
     except Exception as e:
         log_agent_execution("PharmacologistAgent", state, error=e)
-        final_interactions = interactions + [f"Pharmacologist Assessment: Review tool output carefully. Error: {str(e)}"]
+        final_interactions = interactions + ["Pharmacologist Assessment: Review tool output carefully."]
+        errors.append("PharmacologistAgent: LLM safety assessment failed")
         
     result = {
         "drug_interactions": final_interactions,
         "current_step": "pharmacology_completed",
-        "logs": ["Pharmacologist Agent queried Database and rendered safety assessment."]
+        "logs": ["Pharmacologist Agent queried Database and rendered safety assessment."],
+        "errors": errors,
     }
     log_agent_execution("PharmacologistAgent", state, result=result)
     return result
