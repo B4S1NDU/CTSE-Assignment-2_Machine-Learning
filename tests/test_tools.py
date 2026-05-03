@@ -3,6 +3,7 @@ import os
 from src.tools.emr_reader import read_emr
 from src.tools.drug_checker import check_drug_interactions
 from src.tools.guideline_search import search_guidelines
+from src.tools.med_recommender import recommend_medications, get_recommendation_count
 from src.tools.report_writer import secure_write_report
 from src.tools.triage_acuity import assess_triage_acuity
 
@@ -57,6 +58,18 @@ def test_report_writer_tool():
     
     # Cleanup mock test file
     os.remove(filepath)
+
+
+def test_med_recommender_tool():
+    """Validating Student 4 medication recommender uses local SQLite data and returns safe alternatives."""
+    assert get_recommendation_count() >= 50
+
+    recommendations = recommend_medications(["Hypertension"], ["Ibuprofen"])
+    assert any("replace ibuprofen" in r.lower() for r in recommendations)
+    assert any("acetaminophen" in r.lower() for r in recommendations)
+
+    safe_case = recommend_medications(["Healthy"], ["Vitamin C"])
+    assert "No safer alternatives identified" in safe_case[0]
 
 
 def test_triage_acuity_tool():

@@ -30,9 +30,11 @@ def test_end_to_end_pipeline_generates_clean_report():
         "raw_emr_path": "data/mock_patient.json",
         "patient_info": {},
         "symptoms": [],
+        "current_medications": [],
         "triage_acuity": {},
         "potential_diagnoses": [],
         "drug_interactions": [],
+        "med_recommendations": [],
         "final_report_path": "",
         "current_step": "start",
         "logs": ["System initialized"],
@@ -58,5 +60,9 @@ def test_end_to_end_pipeline_generates_clean_report():
     assert "## Patient Info" in report_content
     assert "## Symptoms" in report_content
     assert "## Potential Diagnoses" in report_content
+    assert "## Safer Medication Alternatives (CMO)" in report_content
     assert "## CMO Sign-Off" in report_content
     assert "Error:" not in report_content
+
+    med_recommendations = final_state.get("med_recommendations", [])
+    assert isinstance(med_recommendations, list)

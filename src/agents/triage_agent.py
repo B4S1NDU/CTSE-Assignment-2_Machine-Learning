@@ -56,6 +56,7 @@ def triage_node(state: PatientState):
     result = {
         "patient_info": patient_info,
         "symptoms": symptoms,
+        "current_medications": current_medications,
         "triage_acuity": triage_acuity,
         "current_step": "triage_completed",
         "logs": [

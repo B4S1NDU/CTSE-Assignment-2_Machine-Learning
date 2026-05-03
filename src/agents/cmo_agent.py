@@ -1,5 +1,6 @@
 from src.state import PatientState
 from src.tools.report_writer import secure_write_report
+from src.tools.med_recommender import recommend_medications
 from langchain_core.prompts import PromptTemplate
 from src.llm import get_llm
 
@@ -16,6 +17,9 @@ def cmo_node(state: PatientState):
     symptoms = state.get('symptoms', [])
     diagnoses = state.get('potential_diagnoses', [])
     drug_interactions = state.get('drug_interactions', [])
+    current_medications = state.get("current_medications", state.get("patient_info", {}).get("current_medications", ["Ibuprofen"]))
+
+    med_recommendations = recommend_medications(diagnoses, current_medications)
     
     report_content = f"""
 # Clinical Summary Report
@@ -31,6 +35,9 @@ def cmo_node(state: PatientState):
 
 ## Drug Interactions / Warnings
 {', '.join(drug_interactions)}
+
+## Safer Medication Alternatives (CMO)
+{', '.join(med_recommendations)}
 """
     
     llm = get_llm()
@@ -64,6 +71,7 @@ def cmo_node(state: PatientState):
         
     result = {
         "final_report_path": report_path,
+        "med_recommendations": med_recommendations,
         "current_step": "cmo_completed",
         "logs": [f"CMO generated final clinical summary report via LLM and Toolkit at {report_path or 'unavailable'}."],
         "errors": errors,

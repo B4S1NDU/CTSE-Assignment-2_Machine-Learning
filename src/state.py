@@ -9,9 +9,11 @@ class PatientState(TypedDict):
     raw_emr_path: str
     patient_info: dict
     symptoms: List[str]
+    current_medications: List[str]
     triage_acuity: dict
     potential_diagnoses: List[str]
     drug_interactions: List[str]
+    med_recommendations: List[str]
     final_report_path: str
     
     # Observability - tracking agent execution

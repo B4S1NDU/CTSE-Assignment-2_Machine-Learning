@@ -13,7 +13,7 @@ def pharmacologist_node(state: PatientState):
     errors = []
     
     diagnoses = state.get("potential_diagnoses", [])
-    meds = state.get("patient_info", {}).get("current_medications", ["Ibuprofen"])
+    meds = state.get("current_medications", state.get("patient_info", {}).get("current_medications", ["Ibuprofen"]))
     
     interactions = check_drug_interactions(diagnoses, meds)
     

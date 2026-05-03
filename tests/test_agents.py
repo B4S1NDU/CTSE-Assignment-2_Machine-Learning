@@ -28,9 +28,11 @@ def mock_initial_state() -> PatientState:
         "raw_emr_path": "data/mock_patient.json",
         "patient_info": {},
         "symptoms": [],
+        "current_medications": [],
         "triage_acuity": {},
         "potential_diagnoses": [],
         "drug_interactions": [],
+        "med_recommendations": [],
         "final_report_path": "",
         "current_step": "start",
         "logs": [],
@@ -86,7 +88,7 @@ def test_pharmacologist_agent_output(mock_initial_state):
     STUDENT 3 TEST: Evaluate Pharmacologist Agent output for safety assertions
     """
     mock_initial_state["potential_diagnoses"] = ["Hypertension"]
-    mock_initial_state["patient_info"] = {"current_medications": ["Ibuprofen"]}
+    mock_initial_state["current_medications"] = ["Ibuprofen"]
     
     result_state = pharmacologist_node(mock_initial_state)
     
@@ -102,6 +104,7 @@ def test_cmo_agent_output(mock_initial_state):
     mock_initial_state["patient_info"] = {"name": "Test Patient", "age": 45}
     mock_initial_state["symptoms"] = ["headache"]
     mock_initial_state["potential_diagnoses"] = ["Hypertension"]
+    mock_initial_state["current_medications"] = ["Ibuprofen"]
     mock_initial_state["drug_interactions"] = ["WARNING: Ibuprofen check"]
     
     result_state = cmo_node(mock_initial_state)
@@ -110,3 +113,5 @@ def test_cmo_agent_output(mock_initial_state):
     assert "final_report_path" in result_state
     assert result_state["final_report_path"].endswith(".md")
     assert result_state["current_step"] == "cmo_completed"
+    assert "med_recommendations" in result_state
+    assert any("acetaminophen" in rec.lower() for rec in result_state["med_recommendations"])
