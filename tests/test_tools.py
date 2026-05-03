@@ -45,9 +45,9 @@ def test_drug_checker_tool():
     safe_interactions = check_drug_interactions(["Healthy"], ["Vitamin C"])
     assert "No known severe interactions" in safe_interactions[0]
 
-# STUDENT 4 TEST (CMO / Report Writer Tool)
+# CMO / Report Writer Tool
 def test_report_writer_tool():
-    """Validating Student 4 tool correctly securely writes files to the local disk."""
+    """Validating CMO tool correctly securely writes files to the local disk."""
     dummy_text = "CMO Final Sign Off."
     filepath = secure_write_report(dummy_text)
     
@@ -61,7 +61,7 @@ def test_report_writer_tool():
 
 
 def test_med_recommender_tool():
-    """Validating Student 4 medication recommender uses local SQLite data and returns safe alternatives."""
+    """Validating CMO medication recommender uses local SQLite data and returns safe alternatives."""
     assert get_recommendation_count() >= 50
 
     recommendations = recommend_medications(["Hypertension"], ["Ibuprofen"])

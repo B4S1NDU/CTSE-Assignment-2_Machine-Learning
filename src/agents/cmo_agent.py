@@ -8,7 +8,7 @@ from src.logger import log_agent_execution
 
 def cmo_node(state: PatientState):
     """
-    STUDENT 4 AGENT: Chief Medical Officer (CMO)
+    CMO AGENT: Chief Medical Officer (CMO)
     """
     print("--- [Agent 4] CHIEF MEDICAL OFFICER ---")
     errors = []
@@ -42,7 +42,7 @@ def cmo_node(state: PatientState):
     
     llm = get_llm()
     
-    # EXCEPTIONAL PROMPT ENGINEERING for Student 4 Agent
+    # EXCEPTIONAL PROMPT ENGINEERING for CMO Agent
     prompt = PromptTemplate.from_template(
         "You are the Chief Medical Officer (CMO), the highest clinical authority. "
         "Review this compiled patient dossier:\n{report}\n\n"
@@ -61,7 +61,7 @@ def cmo_node(state: PatientState):
         report_content += "\n\n## CMO Sign-Off\nApproved with tool-verified data. LLM sign-off unavailable."
         errors.append("CMOAgent: LLM sign-off failed")
     
-    # STUDENT 4 TOOL
+    # CMO Agent
     try:
         report_path = secure_write_report(report_content)
     except Exception as e:
