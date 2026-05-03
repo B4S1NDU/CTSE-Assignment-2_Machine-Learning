@@ -8,7 +8,10 @@ from src.graph import build_graph
 def _has_error_markers(final_state: dict, report_content: str) -> bool:
     """Detect fallback/error content in final state and report."""
     diagnoses = ", ".join(final_state.get("potential_diagnoses", []))
+    structured_errors = final_state.get("errors", [])
     return (
+        bool(structured_errors)
+        or
         "Error:" in diagnoses
         or "Error:" in report_content
         or "Approved offline. Error" in report_content
@@ -37,6 +40,7 @@ def generate_evidence() -> tuple[str, str]:
         "final_report_path": "",
         "current_step": "start",
         "logs": ["System initialized"],
+        "errors": [],
     }
 
     final_state = app.invoke(initial_state)

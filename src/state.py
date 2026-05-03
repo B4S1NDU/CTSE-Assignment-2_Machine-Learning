@@ -17,3 +17,4 @@ class PatientState(TypedDict):
     # Observability - tracking agent execution
     current_step: str
     logs: Annotated[List[str], operator.add]
+    errors: Annotated[List[str], operator.add]

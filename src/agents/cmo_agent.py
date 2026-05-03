@@ -2,7 +2,6 @@ from src.state import PatientState
 from src.tools.report_writer import secure_write_report
 from langchain_core.prompts import PromptTemplate
 from src.llm import get_llm
-import os
 
 from src.logger import log_agent_execution
 
@@ -11,6 +10,7 @@ def cmo_node(state: PatientState):
     STUDENT 4 AGENT: Chief Medical Officer (CMO)
     """
     print("--- [Agent 4] CHIEF MEDICAL OFFICER ---")
+    errors = []
     
     patient_info = state.get('patient_info')
     symptoms = state.get('symptoms', [])
@@ -51,19 +51,22 @@ def cmo_node(state: PatientState):
         report_content += f"\n\n## CMO Sign-Off\n{blessing.content}"
     except Exception as e:
         log_agent_execution("CMOAgent", state, error=e)
-        report_content += f"\n\n## CMO Sign-Off\nApproved offline. Error: {str(e)}"
+        report_content += "\n\n## CMO Sign-Off\nApproved with tool-verified data. LLM sign-off unavailable."
+        errors.append("CMOAgent: LLM sign-off failed")
     
     # STUDENT 4 TOOL
     try:
         report_path = secure_write_report(report_content)
     except Exception as e:
         log_agent_execution("CMOAgent", state, error=e)
-        report_path = "Error: Report generation failed."
+        report_path = ""
+        errors.append("CMOAgent: report generation failed")
         
     result = {
         "final_report_path": report_path,
         "current_step": "cmo_completed",
-        "logs": [f"CMO generated final clinical summary report via LLM and Toolkit at {report_path}."]
+        "logs": [f"CMO generated final clinical summary report via LLM and Toolkit at {report_path or 'unavailable'}."],
+        "errors": errors,
     }
     log_agent_execution("CMOAgent", state, result=result)
     return result

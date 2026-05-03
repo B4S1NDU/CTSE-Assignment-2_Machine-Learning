@@ -36,6 +36,7 @@ def test_end_to_end_pipeline_generates_clean_report():
         "final_report_path": "",
         "current_step": "start",
         "logs": ["System initialized"],
+        "errors": [],
     }
 
     final_state = app.invoke(initial_state)

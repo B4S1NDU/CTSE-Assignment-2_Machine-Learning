@@ -33,7 +33,8 @@ def mock_initial_state() -> PatientState:
         "drug_interactions": [],
         "final_report_path": "",
         "current_step": "start",
-        "logs": []
+        "logs": [],
+        "errors": [],
     }
 
 def test_triage_agent_output(mock_initial_state):

@@ -24,6 +24,7 @@ def researcher_node(state: PatientState):
     """
     print("--- [Agent 2] MEDICAL RESEARCHER ---")
     symptoms = state.get("symptoms", [])
+    errors = []
     
     # Mock LLM Processing & Tool Use
     guideline_text = search_guidelines(symptoms)
@@ -54,11 +55,13 @@ def researcher_node(state: PatientState):
         log_agent_execution("ResearcherAgent", state, error=e)
         # Deterministic fallback from local guideline evidence.
         potential_diagnoses = allowed_diagnoses[:2]
+        errors.append("ResearcherAgent: LLM diagnosis generation failed")
         
     result = {
         "potential_diagnoses": potential_diagnoses,
         "current_step": "research_completed",
-        "logs": [f"Researcher Agent evaluated guidelines and proposed diagnoses: {potential_diagnoses}"]
+        "logs": [f"Researcher Agent evaluated guidelines and proposed diagnoses: {potential_diagnoses}"],
+        "errors": errors,
     }
     log_agent_execution("ResearcherAgent", state, result=result)
     return result
