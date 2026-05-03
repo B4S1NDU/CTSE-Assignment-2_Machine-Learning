@@ -4,6 +4,7 @@ from src.tools.emr_reader import read_emr
 from src.tools.drug_checker import check_drug_interactions
 from src.tools.guideline_search import search_guidelines
 from src.tools.report_writer import secure_write_report
+from src.tools.triage_acuity import assess_triage_acuity
 
 # STUDENT 1 TEST (Triage / EMR Tool)
 def test_emr_reader_tool():
@@ -56,3 +57,23 @@ def test_report_writer_tool():
     
     # Cleanup mock test file
     os.remove(filepath)
+
+
+def test_triage_acuity_tool():
+    """Validating Student 1 triage acuity tool classifies urgency from local EMR data."""
+    patient_info = {
+        "age": 45,
+        "gender": "Male",
+        "history": "Smoker, occasional alcohol",
+    }
+    symptoms = ["severe headache", "dizziness", "high blood pressure"]
+    acuity = assess_triage_acuity(patient_info, symptoms, ["Ibuprofen"])
+
+    assert isinstance(acuity, dict)
+    assert acuity["acuity_level"] == 2
+    assert "urgency_label" in acuity
+    assert "rationale" in acuity
+    assert "matched_rules" in acuity
+    assert isinstance(acuity["matched_rules"], list)
+    assert acuity["total_score"] > 0
+    assert isinstance(acuity["red_flags"], list)

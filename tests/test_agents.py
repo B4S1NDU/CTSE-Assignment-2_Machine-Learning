@@ -28,6 +28,7 @@ def mock_initial_state() -> PatientState:
         "raw_emr_path": "data/mock_patient.json",
         "patient_info": {},
         "symptoms": [],
+        "triage_acuity": {},
         "potential_diagnoses": [],
         "drug_interactions": [],
         "final_report_path": "",
@@ -47,6 +48,9 @@ def test_triage_agent_output(mock_initial_state):
     
     # 2. Content accuracy check
     assert isinstance(result_state["symptoms"], list), "Symptoms should be extracted as a list"
+    assert "triage_acuity" in result_state
+    assert isinstance(result_state["triage_acuity"], dict)
+    assert "acuity_level" in result_state["triage_acuity"]
     assert "current_step" in result_state
     assert result_state["current_step"] == "triage_completed"
     assert len(result_state["logs"]) > 0

@@ -1,5 +1,6 @@
 from src.state import PatientState
 from src.tools.emr_reader import read_emr
+from src.tools.triage_acuity import assess_triage_acuity
 from langchain_core.prompts import PromptTemplate
 from src.llm import get_llm
 import json
@@ -46,12 +47,19 @@ def triage_node(state: PatientState):
         
     patient_info = emr_data.get("patient_info", {})
     symptoms = emr_data.get("symptoms", [])
+    current_medications = emr_data.get("current_medications", [])
+    triage_acuity = assess_triage_acuity(patient_info, symptoms, current_medications)
     
     result = {
         "patient_info": patient_info,
         "symptoms": symptoms,
+        "triage_acuity": triage_acuity,
         "current_step": "triage_completed",
-        "logs": [f"Triage Agent extracted patient info and symptoms using EMR Tool.", f"LLM Acknowledgment: {acknowledgement}"]
+        "logs": [
+            f"Triage Agent extracted patient info and symptoms using EMR Tool.",
+            f"Triage Acuity Assessment: Level {triage_acuity['acuity_level']} ({triage_acuity['urgency_label']}) - {triage_acuity['rationale']}",
+            f"LLM Acknowledgment: {acknowledgement}"
+        ]
     }
     log_agent_execution("TriageAgent", state, result=result)
     return result

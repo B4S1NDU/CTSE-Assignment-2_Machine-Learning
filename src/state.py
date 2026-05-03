@@ -9,6 +9,7 @@ class PatientState(TypedDict):
     raw_emr_path: str
     patient_info: dict
     symptoms: List[str]
+    triage_acuity: dict
     potential_diagnoses: List[str]
     drug_interactions: List[str]
     final_report_path: str

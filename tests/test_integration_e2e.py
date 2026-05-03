@@ -30,6 +30,7 @@ def test_end_to_end_pipeline_generates_clean_report():
         "raw_emr_path": "data/mock_patient.json",
         "patient_info": {},
         "symptoms": [],
+        "triage_acuity": {},
         "potential_diagnoses": [],
         "drug_interactions": [],
         "final_report_path": "",
@@ -41,6 +42,10 @@ def test_end_to_end_pipeline_generates_clean_report():
 
     diagnoses = ", ".join(final_state.get("potential_diagnoses", []))
     assert "Error:" not in diagnoses
+
+    acuity = final_state.get("triage_acuity", {})
+    assert isinstance(acuity, dict)
+    assert "acuity_level" in acuity
 
     report_path = final_state.get("final_report_path", "")
     assert report_path and os.path.exists(report_path)

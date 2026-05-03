@@ -31,6 +31,7 @@ def generate_evidence() -> tuple[str, str]:
         "raw_emr_path": "data/mock_patient.json",
         "patient_info": {},
         "symptoms": [],
+        "triage_acuity": {},
         "potential_diagnoses": [],
         "drug_interactions": [],
         "final_report_path": "",
